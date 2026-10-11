@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mathbound: Guardianes de la tierra</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+ 
+<div id="login-screen" class="screen">
+  <div class="login-card">
+    <h1>⚔️ Mathbound: Guardianes de la tierra</h1>
+    <p>Ingresa para continuar tu aventura matemática</p>
+    <input type="text" id="username-input" placeholder="Nombre del Héroe" autocomplete="off">
+    <button onclick="iniciarSesion()">ENTRAR</button>
+  </div>
+</div>
+ 
+<div id="character-selection-screen" class="screen" style="display: none;">
+  <div class="login-card" style="max-width: 450px;">
+    <h1>Selecciona tu Héroe</h1>
+    <p>Elige tu avatar para esta aventura...</p>
+    <div class="char-grid">
+      <div class="char-option" onclick="elegirPersonaje('masculino')" id="char-masculino">
+        <img src="https://i.postimg.cc/1zkqtDXf/cuerpo-removebg-preview.png" alt="Héroe Masculino">
+        <p>Héroe</p>
+      </div>
+      <div class="char-option" onclick="elegirPersonaje('femenino')" id="char-femenino">
+        <img src="https://i.postimg.cc/x8wzbm50/p1-removebg-preview.png" alt="Heroína Femenina">
+        <p>Heroína</p>
+      </div>
+    </div>
+    <button onclick="confirmarPersonaje()">COMENZAR AVENTURA</button>
+  </div>
+</div>
+ 
+<div id="app-screen" class="screen" style="display: none;">
+  <div class="app-container">
+ 
+    <header class="top-bar">
+      <div class="user-info">
+        <h2 id="display-name">Héroe</h2>
+        <div class="level-badge">Lvl <span id="display-level">1</span></div>
+      </div>
+ 
+      <div class="stats-info">
+        <div class="stat-row">
+          <span class="icon">❤️</span>
+          <div class="bar-bg"><div class="bar-fill hp-fill" id="hp-bar" style="width: 100%;"></div></div>
+          <span class="stat-text"><span id="display-hp">10</span>/<span id="display-hp-max">10</span></span>
+        </div>
+        <div class="stat-row">
+          <span class="icon">✨</span>
+          <div class="bar-bg"><div class="bar-fill exp-fill" id="exp-bar" style="width: 0%;"></div></div>
+          <span class="stat-text"><span id="display-exp">0</span>/<span id="display-exp-max">100</span></span>
+        </div>
+        <div class="dmg-stats">
+          <span>⚔️ Lógico: <span id="display-dmg-logico">0</span></span>
+          <span>🔱 Razonamiento: <span id="display-dmg-razon">0</span></span>
+          <span>➗ Cálculo: <span id="display-dmg-calculo">0</span></span>
+        </div>
+      </div>
+ 
+      <div class="currency-info">
+        <div class="coin-box">🪙 <span id="display-coins">0</span></div>
+        <button class="logout-btn" onclick="cerrarSesion()">Salir</button>
+      </div>
+    </header>
+ 
+    <div class="main-content">
+ 
+      <div class="left-panel">
+        <div class="avatar-card">
+          <div class="avatar-container">
+            <img src="https://i.postimg.cc/1zkqtDXf/cuerpo-removebg-preview.png" id="avatar-img" alt="Avatar Mathbound">
+          </div>
+        </div>
+ 
+        <div class="redeem-card">
+          <h3>Canjea tus Códigos</h3>
+          <p>Introduce el código para ganar oro y exp.</p>
+          <div class="input-group">
+            <input type="text" id="codigo-input" placeholder="" autocomplete="off">
+            <button onclick="canjearCodigo()">CANJEAR</button>
+          </div>
+          <div id="alerta-codigo" class="alert"></div>
+        </div>
+ 
+        <button class="btn-map" onclick="abrirMapa()">🗺️ Explorar Mapa</button>
+      </div>
+ 
+      <div class="right-panel">
+        <div class="shop-header">
+          <h3>Tienda de Equipamiento</h3>
+          <p>Mejora tus estadísticas. Solo puedes tener un set equipado a la vez.</p>
+        </div>
+ 
+        <div class="shop-container" id="contenedor-tienda">
+          <!-- Aquí se renderiza la tienda separada por categorías -->
+        </div>
+      </div>
+ 
+    </div>
+  </div>
+</div>
+ 
+<!-- PANTALLA DEL MAPA -->
+<div id="map-screen" class="screen" style="display: none;">
+  <div class="app-container" style="max-width: 900px;">
+ 
+    <header class="top-bar">
+      <div class="user-info">
+        <h2>🗺️ Mapa del Mundo</h2>
+      </div>
+      <button class="logout-btn" onclick="volverDeMapa()">Volver a la Base</button>
+    </header>
+ 
+    <div class="map-wrapper">
+      <!-- Imagen del mapa renderizada -->
+      <img src="https://i.postimg.cc/9MtH2F5K/Gemini-Generated-Image-gdo6ydgdo6ydgdo6.jpg" alt="Mapa de Mathbound" class="map-image">
+ 
+      <!-- ZONA INTERACTIVA: CIUDAD CENTRAL -->
+      <div id="hotspot-ciudad" class="map-hotspot castle-hotspot" onclick="iniciarMisionTutorial()" title="Ciudad Central - Misión Tutorial"></div>
+ 
+      <!-- ZONA INTERACTIVA: PICOS DE CÁLCULO -->
+      <div id="hotspot-picos" class="map-hotspot picos-hotspot" onclick="abrirVerificacionPicos()" title="Picos de Cálculo"></div>
+ 
+      <!-- ZONA INTERACTIVA: PRADOS DE LA LÓGICA (abajo a la izquierda) -->
+      <div id="hotspot-prados" class="map-hotspot prados-hotspot" onclick="abrirVerificacionPrados()" title="Prados de la Lógica"></div>
+    </div>
+ 
+  </div>
+</div>
+ 
+<!-- VERIFICACIÓN DE SET: PICOS DE CÁLCULO -->
+<div id="picos-check-screen" class="screen" style="display: none;">
+  <div class="login-card" style="max-width: 420px;">
+    <h1>➗ Picos de Cálculo</h1>
+    <p>Esta región es peligrosa. Es necesario tener equipado el <strong>Set del Cálculo</strong> para poder ingresar.</p>
+    <div id="picos-set-info" class="set-info"></div>
+    <div class="check-buttons">
+      <button class="btn-secondary" onclick="volverATienda()">🛒 Volver a la tienda</button>
+      <button onclick="entrarPicos()">✅ Ya lo tengo</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- VERIFICACIÓN DE SET: PRADOS DE LA LÓGICA -->
+<div id="prados-check-screen" class="screen" style="display: none;">
+  <div class="login-card" style="max-width: 420px;">
+    <h1>🛡️ Prados de la Lógica</h1>
+    <p>Esta región es peligrosa. Es necesario tener equipado el <strong>Set Lógico</strong> para poder ingresar.</p>
+    <div id="prados-set-info" class="set-info"></div>
+    <div class="check-buttons">
+      <button class="btn-secondary" onclick="volverATienda()">🛒 Volver a la tienda</button>
+      <button onclick="entrarPrados()">✅ Ya lo tengo</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- PRESENTACIÓN DEL MONSTRUO: GÓLEM -->
+<div id="monster-intro-screen" class="screen" style="display: none;">
+  <div class="monster-card">
+    <div class="monster-info">
+      <h2>Gólem de la Chatarra</h2>
+      <p><strong>Ubicación:</strong> Picos de Cálculo</p>
+      <p><strong>Personalidad:</strong> Burlón, arrogante, escandaloso y convencido de que los errores de los humanos son su mayor fuente de poder.</p>
+      <p><strong>Debilidad:</strong> Ataques de cálculo</p>
+      <p><strong>Origen:</strong> Durante años, los habitantes de Mathbound arrojaron aparatos electrónicos, latas, cables y piezas metálicas en quebradas, barrancos y rincones de las montañas. Los residuos se acumularon hasta que una antigua energía mineral de los Picos de Cálculo los despertó. Las piezas comenzaron a unirse, los engranajes giraron y las pantallas se encendieron. Así nació el Gólem de la Chatarra.</p>
+      <p>Su cuerpo sigue creciendo porque cada nuevo residuo que llega a las montañas se incorpora a él. Sus ojos azules son el resultado de una energía eléctrica inestable, mientras que sus nubes de vapor frío y humo tóxico anuncian su presencia mucho antes de que aparezca.</p>
+    </div>
+    <div class="monster-photo">
+      <img src="https://i.postimg.cc/d0jHp2mm/Gigante-de-Chatarra-en-la-Escombrera.png" alt="Gólem de la Chatarra">
+    </div>
+    <button class="monster-start-btn" onclick="iniciarLoreGolem()">INICIAR</button>
+  </div>
+</div>
+ 
+<!-- PRESENTACIÓN DEL MONSTRUO: DEVORADOR DE LOS PRADOS -->
+<div id="devorador-intro-screen" class="screen" style="display: none;">
+  <div class="monster-card">
+    <div class="monster-info">
+      <h2>El Devorador de los Prados</h2>
+      <p><strong>Ubicación:</strong> Prados de la Lógica</p>
+      <p><strong>Personalidad:</strong> Hambriento, salvaje, glotón y territorial. Se burla de quienes desperdician comida y cree que todos los residuos orgánicos le pertenecen. Cuanto más come, más grande y poderoso se vuelve.</p>
+      <p><strong>Debilidad:</strong> Ataques lógicos</p>
+      <p><strong>Origen:</strong> Durante años, los habitantes de Mathbound arrojaron restos de comida, cáscaras de frutas, verduras podridas y otros residuos orgánicos en los prados, contaminando la tierra y dejando que los desechos se acumularan sin control. Con el tiempo, una antigua energía natural oculta bajo los Prados de la Lógica despertó y dio vida a aquella montaña de desperdicios. Las raíces se entrelazaron, las plantas crecieron descontroladamente y los restos de comida se fusionaron con la tierra hasta formar una criatura gigantesca. Así nació el Devorador de los Prados.</p>
+      <p>Su cuerpo está compuesto de tierra húmeda, raíces, hojas, frutas podridas y restos de alimentos que utiliza para regenerarse y aumentar su tamaño. Sus ojos amarillos brillan cada vez que detecta nuevos residuos, mientras que su enorme boca libera gases y un olor putrefacto que anuncia su llegada. Cada resto orgánico que encuentra alimenta su crecimiento, convirtiendo los prados en un terreno cada vez más peligroso. Sin embargo, cuando los residuos se clasifican correctamente y se transforman en compost, pierde su fuente de alimento y comienza a debilitarse.</p>
+    </div>
+    <div class="monster-photo">
+      <img src="https://i.postimg.cc/d07dTd4v/Monstruo-de-Compost-en-el-Campo.png" alt="El Devorador de los Prados">
+    </div>
+    <button class="monster-start-btn" onclick="iniciarLoreDevorador()">INICIAR</button>
+  </div>
+</div>
+ 
+<!-- PANTALLA DE MISIÓN TUTORIAL (también se usa para el lore del Gólem y del Devorador) -->
+<div id="tutorial-screen" class="screen" style="display: none;">
+ 
+  <!-- FASE 1: HISTORIA / LORE -->
+  <div id="tutorial-lore-view" class="lore-container">
+    <div class="lore-image-frame">
+      <img id="lore-image" src="" alt="Escena de la historia">
+    </div>
+    <div class="dialogue-box no-avatar">
+      <div class="dialogue-content">
+        <h3 class="dialogue-name" id="lore-speaker">Tutor Pólya</h3>
+        <p id="dialogue-text"></p>
+        <button id="btn-next-lore" onclick="avanzarLore()">Siguiente ⏭️</button>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- FASE 2: INTERFAZ DE EJERCICIOS -->
+  <div id="tutorial-game-view" class="app-container" style="display: none; background-image: url('https://i.postimg.cc/w3PjQLqL/image.jpg'); background-size: cover; background-position: center; justify-content: center;">
+ 
+    <header class="top-bar" style="background: rgba(36, 37, 48, 0.9);">
+      <div class="user-info">
+        <h2 id="tut-display-name">Héroe</h2>
+        <div class="level-badge">Lvl <span id="tut-display-level">1</span></div>
+      </div>
+      <div class="stats-info">
+        <div class="stat-row">
+          <span class="icon">❤️</span>
+          <div class="bar-bg"><div class="bar-fill hp-fill" id="tut-hp-bar" style="width: 100%;"></div></div>
+          <span class="stat-text"><span id="tut-display-hp">10</span>/10</span>
+        </div>
+      </div>
+      <div class="currency-info">
+        <button class="logout-btn" onclick="salirTutorial()">Abandonar</button>
+      </div>
+    </header>
+ 
+    <div class="tutorial-board">
+      <div class="instruction-panel">
+        <h3>Entrenamiento de Jerarquía</h3>
+        <p>Selecciona la parte de la operación que debes resolver primero. Usa al <button class="btn-tutor mini-btn" onclick="abrirTutorIA()">🤖 Tutor IA</button> si tienes dudas.</p>
+      </div>
+ 
+      <div class="exercise-panel">
+        <div class="level-indicator">Ejercicio <span id="current-ex-num">1</span> de 8</div>
+ 
+        <div id="exercise-history" class="math-history">
+          <!-- Historial de pasos resueltos -->
+        </div>
+ 
+        <div class="current-step-box">
+          <div id="current-equation" class="equation-display"></div>
+          <p id="instruction-text" style="margin-top: 15px; color: var(--text-muted);">¿Qué parte resolverás ahora?</p>
+ 
+          <div id="options-container" class="math-options-grid">
+            <!-- Botones de selección generados por JS -->
+          </div>
+        </div>
+ 
+        <div id="calculator-panel" class="calculator-panel" style="display: none;">
+          <p>Resuelve: <strong id="calc-prompt-text" style="color: var(--color-exp);"></strong></p>
+          <div class="calc-input-row">
+            <input type="number" id="calc-input" placeholder="Tu respuesta..." autocomplete="off" step="any">
+            <button class="btn-enter" onclick="verificarPasoTutorial()">ENTER ↵</button>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+  </div>
+</div>
+ 
+<!-- PANTALLA DE COMBATE 1: GÓLEM DE LA CHATARRA -->
+<div id="combat-screen" class="screen" style="display: none;">
+  <div class="combat-bg"></div>
+  <div class="combat-ui">
+ 
+    <div class="combat-top">
+      <!-- Guerrero (izquierda) -->
+      <div class="eb-window hero-panel" id="combat-hero-panel">
+        <div class="combat-hero-img"><img id="combat-hero-img" src="" alt="Guerrero"></div>
+        <div class="combat-stats">
+          <h3 id="combat-hero-name">HÉROE</h3>
+          <div class="stat-row">
+            <span class="icon">❤️</span>
+            <div class="bar-bg"><div class="bar-fill hp-fill" id="combat-hero-hp-bar" style="width: 100%;"></div></div>
+            <span class="stat-text"><span id="combat-hero-hp">10</span>/<span id="combat-hero-hp-max">10</span></span>
+          </div>
+          <div class="combat-dmg">⚔️ Daño base: <span id="combat-dano">40</span></div>
+          <div class="combat-dmg">✖️ Multiplicador: ×<span id="combat-mult">2.5</span></div>
+        </div>
+      </div>
+ 
+      <!-- Botón del tutor (sin enlace por ahora) -->
+      <button class="btn-chat-polya">💬 Chatea con el Tutor Pólya</button>
+ 
+      <!-- Monstruo (derecha) -->
+      <div class="eb-window monster-panel">
+        <h3>Gólem de la Chatarra</h3>
+        <div class="stat-row">
+          <span class="icon">❤️</span>
+          <div class="bar-bg"><div class="bar-fill hp-fill" id="combat-monster-hp-bar" style="width: 100%;"></div></div>
+          <span class="stat-text wide"><span id="combat-monster-hp">500</span>/<span id="combat-monster-hp-max">500</span></span>
+        </div>
+        <button class="logout-btn combat-exit" onclick="salirCombate()">Abandonar</button>
+      </div>
+    </div>
+ 
+    <!-- Centro: monstruo y problema -->
+    <div class="combat-center">
+      <div class="monster-float">
+        <img id="combat-monster-img" class="combat-monster" src="https://i.postimg.cc/dtxHrQ4w/Gigante-de-Chatarra-en-la-Escombrera-removebg-preview.png" alt="Gólem de la Chatarra">
+      </div>
+      <div class="eb-window problem-box">
+        <div class="problem-num" id="combat-problem-num">Problema 1</div>
+        <p id="combat-problem-text"></p>
+      </div>
+    </div>
+ 
+    <!-- Abajo: las cuatro fases del Método de Pólya -->
+    <div class="combat-boxes">
+      <div class="eb-window phase-box">
+        <h4>1. Datos del problema</h4>
+        <textarea id="in-datos" rows="3" placeholder="Escribe los datos que da el problema..." autocomplete="off"></textarea>
+        <input type="text" id="in-pregunta" placeholder="¿Qué te preguntan?" autocomplete="off">
+      </div>
+ 
+      <div class="eb-window phase-box">
+        <h4>2. Concebir un plan</h4>
+        <p class="phase-hint">Selecciona las operaciones que vas a realizar</p>
+        <div class="op-grid">
+          <button class="op-btn" data-op="+" onclick="alternarOperacion(this)">+</button>
+          <button class="op-btn" data-op="-" onclick="alternarOperacion(this)">−</button>
+          <button class="op-btn" data-op="*" onclick="alternarOperacion(this)">×</button>
+          <button class="op-btn" data-op="/" onclick="alternarOperacion(this)">÷</button>
+        </div>
+      </div>
+ 
+      <div class="eb-window phase-box">
+        <h4>3. Descripción del plan</h4>
+        <p class="phase-hint">Explica con tus palabras qué debes hacer para resolver el problema (ej: primero sumo ... con ... y después divido ...)</p>
+        <textarea id="in-descripcion" rows="3" placeholder="Describe tu plan paso a paso..." autocomplete="off"></textarea>
+      </div>
+ 
+      <div class="eb-window phase-box">
+        <h4>4. Ejecutar el plan</h4>
+        <p class="phase-hint">Resuelve y escribe la respuesta</p>
+        <input type="text" id="in-respuesta" placeholder="Tu respuesta..." autocomplete="off">
+        <button class="btn-verify" onclick="verificarCombate()">VERIFICAR</button>
+      </div>
+    </div>
+ 
+  </div>
+</div>
+ 
+<!-- PANTALLA DE COMBATE 2: DEVORADOR DE LOS PRADOS (modelación) -->
+<div id="combat2-screen" class="screen" style="display: none;">
+  <div class="combat-bg combat-bg2"></div>
+  <div class="combat-ui">
+ 
+    <div class="combat-top">
+      <div class="eb-window hero-panel" id="combat2-hero-panel">
+        <div class="combat-hero-img"><img id="combat2-hero-img" src="" alt="Guerrero"></div>
+        <div class="combat-stats">
+          <h3 id="combat2-hero-name">HÉROE</h3>
+          <div class="stat-row">
+            <span class="icon">❤️</span>
+            <div class="bar-bg"><div class="bar-fill hp-fill" id="combat2-hero-hp-bar" style="width: 100%;"></div></div>
+            <span class="stat-text"><span id="combat2-hero-hp">10</span>/<span id="combat2-hero-hp-max">10</span></span>
+          </div>
+          <div class="combat-dmg">⚔️ Daño base: <span id="combat2-dano">40</span></div>
+          <div class="combat-dmg">✖️ Multiplicador: ×<span id="combat2-mult">2.5</span></div>
+        </div>
+      </div>
+ 
+      <button class="btn-chat-polya">💬 Chatea con el Tutor Pólya</button>
+ 
+      <div class="eb-window monster-panel">
+        <h3>El Devorador de los Prados</h3>
+        <div class="stat-row">
+          <span class="icon">❤️</span>
+          <div class="bar-bg"><div class="bar-fill hp-fill" id="combat2-monster-hp-bar" style="width: 100%;"></div></div>
+          <span class="stat-text wide"><span id="combat2-monster-hp">500</span>/<span id="combat2-monster-hp-max">500</span></span>
+        </div>
+        <button class="logout-btn combat-exit" onclick="salirCombate2()">Abandonar</button>
+      </div>
+    </div>
+ 
+    <div class="combat-center">
+      <div class="monster-float">
+        <img id="combat2-monster-img" class="combat-monster" src="https://i.postimg.cc/J40McqC1/Guardian-Golem-del-Compost-removebg-preview.png" alt="El Devorador de los Prados">
+      </div>
+      <div class="eb-window problem-box">
+        <div class="problem-num" id="combat2-problem-num">Problema 1</div>
+        <p id="combat2-problem-text"></p>
+      </div>
+    </div>
+ 
+    <!-- Abajo: modelación + resolución ramificada -->
+    <div class="combat2-boxes">
+      <div class="eb-window phase-box">
+        <h4>Modelación del problema</h4>
+        <p class="phase-hint">Convierte el problema en una expresión matemática usando los datos del enunciado (usa paréntesis si hace falta). Al generar el ejercicio ya no podrás cambiarla.</p>
+        <input type="text" id="in-modelo2" placeholder="Ej: (12 + 8) × 5 − 3" autocomplete="off">
+        <div id="combat2-msg" class="combat2-msg"></div>
+        <button class="btn-verify" id="btn-generar2" onclick="generarEjercicio2()">GENERAR EJERCICIO</button>
+      </div>
+ 
+      <div class="eb-window phase-box exercise-box">
+        <h4>Resolución ramificada</h4>
+        <div id="combat2-history" class="math-history"></div>
+        <div class="current-step-box">
+          <div id="combat2-equation" class="equation-display"></div>
+          <p id="combat2-instruction" class="phase-hint" style="margin-top:8px;"></p>
+          <div id="combat2-options" class="math-options-grid"></div>
+        </div>
+        <div id="combat2-calc-panel" class="calculator-panel" style="display: none;">
+          <p>Resuelve: <strong id="combat2-calc-prompt" style="color: var(--color-exp);"></strong></p>
+          <p class="phase-hint">Si el resultado no es exacto, redondea a 2 decimales.</p>
+          <div class="calc-input-row">
+            <input type="number" id="combat2-calc-input" placeholder="Tu respuesta..." autocomplete="off" step="any">
+            <button class="btn-enter" onclick="verificarPaso2()">ENTER ↵</button>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+  </div>
+</div>
+ 
+<!-- MODAL DE COMBATE (confirmación, resultados, victoria y derrota) -->
+<div id="combat-modal" class="combat-modal" style="display: none;">
+  <div class="login-card" style="max-width: 460px;">
+    <h1 id="combat-modal-title"></h1>
+    <div id="combat-modal-body" class="combat-modal-body"></div>
+    <div id="combat-modal-buttons" class="check-buttons"></div>
+  </div>
+</div>
+ 
+<!-- Un solo script: tu juego + el motor de audio (al final del archivo) -->
+<script src="script.js"></script>
+</body>
+</html>
+ 
